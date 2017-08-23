@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/BaReinhard/ClubReady-Checkin-React-Component.png?branch=master)](https://travis-ci.org/BaReinhard/ClubReady-Checkin-React-Component)
 
 # ClubReady-Checkin-React-Component
-A simple react module template to help expedite getting a npm module up and running on npm.
+React Input that takes a barcode or phone number to checkin a member, returns the usersdata and whether they were checkedin successfully
 
 # Install 
 
