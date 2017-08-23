@@ -15,46 +15,51 @@ export default class ClubReadyCheckinComponent extends React.Component {
         let foundUser = {};
         let barcode = event.target['clubready-checkin-barcode'].value;
         event.target['clubready-checkin-barcode'].value = '';
-        let findUserResponse = await http.get(
-            `http://www.clubready.com:80/api/current/users/find?ApiKey=${this.state.token}&&&StoreId=${this.state
-                .store}&&Barcode=${barcode}&&&`,
-        );
-        let found = false;
-        findUserResponse.data.users.forEach(user => {
-            if (user.Barcode === barcode) {
-                found = true;
-                foundUser = user;
-            }
-        });
-        console.log(findUserResponse);
-        if (!found) {
-            console.log('Using Phone');
-            findUserResponse = await http.get(
+        let validationPassed = this.props.validation ? this.props.validation(barcode) : true;
+        if (validationPassed) {
+            let findUserResponse = await http.get(
                 `http://www.clubready.com:80/api/current/users/find?ApiKey=${this.state.token}&&&StoreId=${this.state
-                    .store}&&Phone=${barcode}&&&`,
+                    .store}&&Barcode=${barcode}&&&`,
             );
-            console.log(findUserResponse);
+            let found = false;
             findUserResponse.data.users.forEach(user => {
-                if (user.Phone === barcode) {
+                if (user.Barcode === barcode) {
                     found = true;
                     foundUser = user;
                 }
             });
-        }
+            console.log(findUserResponse);
+            if (!found) {
+                console.log('Using Phone');
+                findUserResponse = await http.get(
+                    `http://www.clubready.com:80/api/current/users/find?ApiKey=${this.state.token}&&&StoreId=${this
+                        .state.store}&&Phone=${barcode}&&&`,
+                );
+                console.log(findUserResponse);
+                findUserResponse.data.users.forEach(user => {
+                    if (user.Phone === barcode) {
+                        found = true;
+                        foundUser = user;
+                    }
+                });
+            }
 
-        if (found) {
-            let userResponse = await http.get(
-                `http://www.clubready.com:80/api/current/users/{UserId}?ApiKey=${this.state
-                    .token}&UserId=${foundUser.UserId}&StoreId=${this.state.store}&&FullDetail=true`,
-            );
-            foundUser = userResponse.data;
-            let checkinResponse = await http.post(
-                `http://www.clubready.com:80/api/current/users/checkin?ApiKey=${this.state.token}&Barcode=${userResponse
-                    .data.Barcode}&StoreId=${this.state.store}&`,
-            );
-            this.props.returnHandler({ userData: foundUser, checkin: checkinResponse.data });
+            if (found) {
+                let userResponse = await http.get(
+                    `http://www.clubready.com:80/api/current/users/{UserId}?ApiKey=${this.state
+                        .token}&UserId=${foundUser.UserId}&StoreId=${this.state.store}&&FullDetail=true`,
+                );
+                foundUser = userResponse.data;
+                let checkinResponse = await http.post(
+                    `http://www.clubready.com:80/api/current/users/checkin?ApiKey=${this.state
+                        .token}&Barcode=${userResponse.data.Barcode}&StoreId=${this.state.store}&`,
+                );
+                this.props.returnHandler({ userData: foundUser, checkin: checkinResponse.data, validation: true });
+            } else {
+                this.props.returnHandler({ userData: 'No User Found', checkin: false, validation: true });
+            }
         } else {
-            this.props.returnHandler({ userData: 'No User Found', checkin: false });
+            this.props.returnHandler({ userData: 'Validation Failed', checkin: false, validation: false });
         }
     };
     render() {
@@ -76,7 +81,9 @@ export default class ClubReadyCheckinComponent extends React.Component {
 }
 ClubReadyCheckinComponent.propTypes = {
     token: PropTypes.string.isRequired,
+    returnHandler: PropTypes.func.isRequired,
     store: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    validation: PropTypes.func,
     inputStyle: PropTypes.object,
     useButton: PropTypes.bool,
     buttonStyle: PropTypes.object,
