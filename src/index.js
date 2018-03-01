@@ -18,7 +18,7 @@ export default class ClubReadyCheckinComponent extends React.Component {
         let validationPassed = this.props.validation ? this.props.validation(barcode) : true;
         if (validationPassed) {
             let findUserResponse = await http.get(
-                `http://www.clubready.com:80/api/current/users/find?ApiKey=${this.state.token}&&&StoreId=${this.state
+                `https://www.clubready.com:80/api/current/users/find?ApiKey=${this.state.token}&&&StoreId=${this.state
                     .store}&&Barcode=${barcode}&&&`,
             );
             let found = false;
@@ -32,7 +32,7 @@ export default class ClubReadyCheckinComponent extends React.Component {
             if (!found) {
                 console.log('Using Phone');
                 findUserResponse = await http.get(
-                    `http://www.clubready.com:80/api/current/users/find?ApiKey=${this.state.token}&&&StoreId=${this
+                    `https://www.clubready.com:80/api/current/users/find?ApiKey=${this.state.token}&&&StoreId=${this
                         .state.store}&&Phone=${barcode}&&&`,
                 );
                 console.log(findUserResponse);
@@ -46,12 +46,12 @@ export default class ClubReadyCheckinComponent extends React.Component {
 
             if (found) {
                 let userResponse = await http.get(
-                    `http://www.clubready.com:80/api/current/users/{UserId}?ApiKey=${this.state
+                    `https://www.clubready.com:80/api/current/users/{UserId}?ApiKey=${this.state
                         .token}&UserId=${foundUser.UserId}&StoreId=${this.state.store}&&FullDetail=true`,
                 );
                 foundUser = userResponse.data;
                 let checkinResponse = await http.post(
-                    `http://www.clubready.com:80/api/current/users/checkin?ApiKey=${this.state
+                    `https://www.clubready.com:80/api/current/users/checkin?ApiKey=${this.state
                         .token}&Barcode=${userResponse.data.Barcode}&StoreId=${this.state.store}&`,
                 );
                 this.props.returnHandler({ userData: foundUser, checkin: checkinResponse.data, validation: true });
